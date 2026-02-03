@@ -137,7 +137,7 @@ export default {
           question = `${num1} × ${num2} = ?`
         } else {
           const num3 = num1 * num2
-          result = num2
+          result = num1
           question = `${num3} ÷ ${num2} = ?`
         }
       } else {
@@ -154,7 +154,7 @@ export default {
           question = `${num1} × ${num2} = ?`
         } else {
           const num3 = num1 * num2
-          result = num2
+          result = num1
           question = `${num3} ÷ ${num2} = ?`
         }
       }
