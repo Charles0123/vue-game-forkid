@@ -131,8 +131,11 @@ export default {
     }
   },
   mounted() {
-    this.updateGameAreaSize()
     window.addEventListener('resize', this.updateGameAreaSize)
+    // 延遲執行以確保 DOM 已渲染
+    this.$nextTick(() => {
+      this.updateGameAreaSize()
+    })
   },
   beforeUnmount() {
     if (this.gameTimer) clearInterval(this.gameTimer)
@@ -162,8 +165,10 @@ export default {
         this.targetSize = 50
       }
 
-      this.updateGameAreaSize()
-      this.nextRound()
+      this.$nextTick(() => {
+        this.updateGameAreaSize()
+        this.nextRound()
+      })
     },
     nextRound() {
       if (this.round >= 10) {
@@ -184,29 +189,37 @@ export default {
       }, waitTime + Math.random() * 2000)
     },
     showTarget() {
-      this.targetActive = true
-      this.canClick = true
-      this.reactionTime = 0
-      this.startTime = Date.now()
+      // 在顯示目標前，確保獲取最新的遊戲區域大小
+      this.$nextTick(() => {
+        this.updateGameAreaSize()
+        this.randomizeTargetPosition()
+        
+        this.targetActive = true
+        this.canClick = true
+        this.reactionTime = 0
+        this.startTime = Date.now()
 
-      const reactionTimeout = this.difficulty === 'easy' ? 5000 : this.difficulty === 'medium' ? 4000 : 3000
+        const reactionTimeout = this.difficulty === 'easy' ? 5000 : this.difficulty === 'medium' ? 4000 : 3000
 
-      if (this.gameTimer) clearInterval(this.gameTimer)
+        if (this.gameTimer) clearInterval(this.gameTimer)
 
-      this.gameTimer = setTimeout(() => {
-        if (this.targetActive) {
-          this.targetActive = false
-          setTimeout(() => {
-            this.nextRound()
-          }, 500)
-        }
-      }, reactionTimeout)
-
-      this.randomizeTargetPosition()
+        this.gameTimer = setTimeout(() => {
+          if (this.targetActive) {
+            this.targetActive = false
+            setTimeout(() => {
+              this.nextRound()
+            }, 500)
+          }
+        }, reactionTimeout)
+      })
     },
     randomizeTargetPosition() {
-      this.targetX = Math.random() * (this.gameAreaWidth - this.targetSize)
-      this.targetY = Math.random() * (this.gameAreaHeight - this.targetSize)
+      // 確保位置不會超出邊界
+      const maxX = Math.max(this.gameAreaWidth - this.targetSize, 0)
+      const maxY = Math.max(this.gameAreaHeight - this.targetSize, 0)
+      
+      this.targetX = Math.random() * maxX
+      this.targetY = Math.random() * maxY
     },
     hitTarget() {
       if (!this.targetActive || !this.canClick) return
