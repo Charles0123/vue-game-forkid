@@ -1,0 +1,539 @@
+<template>
+  <div class="pattern-game-screen">
+    <!-- 遊戲頭部 -->
+    <div class="game-header">
+      <button class="back-btn" @click="$emit('back')">← 返回菜單</button>
+      <div class="game-info">
+        <div class="info-item">
+          <span class="label">難度:</span>
+          <span class="difficulty" :class="difficulty">{{ difficultyText }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">分數:</span>
+          <span class="score">{{ score }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 難度選擇 -->
+    <div v-if="!gameStarted" class="difficulty-selector">
+      <h2>尋找規律遊戲</h2>
+      <p class="subtitle">找出序列中的下一個數字</p>
+      <div class="difficulty-buttons">
+        <button @click="startGame('easy')" class="difficulty-btn easy">
+          ⭐ 簡單
+        </button>
+        <button @click="startGame('medium')" class="difficulty-btn medium">
+          ⭐⭐ 中等
+        </button>
+        <button @click="startGame('hard')" class="difficulty-btn hard">
+          ⭐⭐⭐ 困難
+        </button>
+      </div>
+    </div>
+
+    <!-- 遊戲區域 -->
+    <div v-else-if="!gameOver" class="game-area">
+      <div class="pattern-card">
+        <p class="sequence">{{ patternDisplay }}</p>
+        <p class="question">下一個數字是？</p>
+      </div>
+
+      <div class="answer-grid">
+        <button
+          v-for="(answer, index) in answers"
+          :key="index"
+          class="answer-btn"
+          @click="checkAnswer(answer)"
+          :class="{ correct: selectedAnswer === index && isCorrect }"
+        >
+          {{ answer }}
+        </button>
+      </div>
+
+      <div class="progress">
+        <p>{{ correctCount }}/{{ totalQuestions }}</p>
+        <div class="progress-bar">
+          <div class="progress-fill" :style="{ width: (correctCount / totalQuestions) * 100 + '%' }"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 遊戲結束 -->
+    <div v-else class="game-over-screen">
+      <div class="result-card">
+        <div class="emoji">🧩</div>
+        <h2>{{ resultMessage }}</h2>
+        <p class="stats">
+          正確率: {{ Math.round((correctCount / totalQuestions) * 100) }}% |
+          分數: {{ score }}
+        </p>
+
+        <button class="restart-btn" @click="resetGame">
+          🔄 重新開始
+        </button>
+        <button class="menu-btn" @click="$emit('back')">
+          🏠 返回菜單
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'PatternGame',
+  emits: ['back'],
+  data() {
+    return {
+      difficulty: null,
+      gameStarted: false,
+      gameOver: false,
+      pattern: [],
+      patternDisplay: '',
+      answers: [],
+      correctAnswer: null,
+      selectedAnswer: -1,
+      isCorrect: false,
+      correctCount: 0,
+      totalQuestions: 10,
+      score: 0,
+      questionIndex: 0
+    }
+  },
+  computed: {
+    difficultyText() {
+      const map = { easy: '簡單', medium: '中等', hard: '困難' }
+      return map[this.difficulty] || ''
+    },
+    resultMessage() {
+      const accuracy = Math.round((correctCount / this.totalQuestions) * 100)
+      if (accuracy >= 90) return '邏輯小天才！太棒了！🌟'
+      if (accuracy >= 70) return '很不錯！再接再厲！💪'
+      return '繼續練習，找規律！💙'
+    }
+  },
+  methods: {
+    startGame(level) {
+      this.difficulty = level
+      this.gameStarted = true
+      this.generatePattern()
+    },
+    generatePattern() {
+      const patternTypes = ['arithmetic', 'fibonacci', 'square', 'double']
+      const type = patternTypes[Math.floor(Math.random() * patternTypes.length)]
+
+      let num = Math.floor(Math.random() * 50) + 1
+      let step = Math.floor(Math.random() * 10) + 1
+
+      this.pattern = []
+      let patternLength = 3
+
+      if (this.difficulty === 'easy') {
+        patternLength = 3
+      } else if (this.difficulty === 'medium') {
+        patternLength = 4
+      } else {
+        patternLength = 5
+      }
+
+      for (let i = 0; i < patternLength + 1; i++) {
+        if (type === 'arithmetic') {
+          this.pattern.push(num + step * i)
+        } else if (type === 'fibonacci') {
+          if (i === 0) this.pattern.push(1)
+          else if (i === 1) this.pattern.push(1)
+          else this.pattern.push(this.pattern[i - 1] + this.pattern[i - 2])
+        } else if (type === 'square') {
+          this.pattern.push((i + 1) * (i + 1))
+        } else {
+          this.pattern.push(num * Math.pow(2, i))
+        }
+      }
+
+      this.correctAnswer = this.pattern[patternLength]
+      this.pattern = this.pattern.slice(0, patternLength)
+      this.patternDisplay = this.pattern.join(', ') + ', ?'
+      this.generateAnswers(this.correctAnswer)
+      this.selectedAnswer = -1
+      this.isCorrect = false
+    },
+    generateAnswers(correct) {
+      this.answers = [correct]
+      while (this.answers.length < 4) {
+        const wrong = correct + (Math.floor(Math.random() * 50) - 25)
+        if (!this.answers.includes(wrong) && wrong > 0 && wrong !== correct) {
+          this.answers.push(wrong)
+        }
+      }
+      this.answers = this.answers.sort(() => Math.random() - 0.5)
+    },
+    checkAnswer(answer) {
+      this.selectedAnswer = this.answers.indexOf(answer)
+      if (answer === this.correctAnswer) {
+        this.isCorrect = true
+        this.correctCount++
+        this.score += 10 * (this.difficulty === 'easy' ? 1 : this.difficulty === 'medium' ? 2 : 3)
+        setTimeout(() => {
+          this.questionIndex++
+          if (this.questionIndex >= this.totalQuestions) {
+            this.gameOver = true
+          } else {
+            this.generatePattern()
+          }
+        }, 500)
+      } else {
+        this.isCorrect = false
+        setTimeout(() => {
+          this.questionIndex++
+          if (this.questionIndex >= this.totalQuestions) {
+            this.gameOver = true
+          } else {
+            this.generatePattern()
+          }
+        }, 800)
+      }
+    },
+    resetGame() {
+      this.difficulty = null
+      this.gameStarted = false
+      this.gameOver = false
+      this.correctCount = 0
+      this.score = 0
+      this.questionIndex = 0
+    }
+  }
+}
+</script>
+
+<style scoped>
+.pattern-game-screen {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 30px 20px;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.back-btn {
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.back-btn:hover {
+  transform: scale(1.05);
+}
+
+.game-info {
+  display: flex;
+  gap: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 15px 30px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.label {
+  font-weight: bold;
+  color: #667eea;
+  font-size: 1.1rem;
+}
+
+.difficulty {
+  font-size: 1.3rem;
+  font-weight: bold;
+  padding: 5px 15px;
+  border-radius: 10px;
+}
+
+.difficulty.easy {
+  background: #90EE90;
+  color: #333;
+}
+
+.difficulty.medium {
+  background: #FFD700;
+  color: #333;
+}
+
+.difficulty.hard {
+  background: #FF6B6B;
+  color: white;
+}
+
+.score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #f5576c;
+}
+
+.difficulty-selector {
+  max-width: 600px;
+  margin: 50px auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 25px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.5s ease-out;
+}
+
+.difficulty-selector h2 {
+  font-size: 2rem;
+  color: #667eea;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.difficulty-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.difficulty-btn {
+  padding: 30px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.difficulty-btn.easy {
+  background: linear-gradient(135deg, #90EE90 0%, #7CCD7C 100%);
+}
+
+.difficulty-btn.medium {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+.difficulty-btn.hard {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF4444 100%);
+}
+
+.difficulty-btn:hover {
+  transform: scale(1.1);
+}
+
+.game-area {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.pattern-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideDown 0.5s ease-out;
+}
+
+.sequence {
+  font-size: 2rem;
+  color: #667eea;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.question {
+  font-size: 1.3rem;
+  color: #666;
+  margin: 0;
+}
+
+.answer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.answer-btn {
+  padding: 20px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border: 3px solid white;
+}
+
+.answer-btn:hover {
+  transform: scale(1.05);
+}
+
+.answer-btn.correct {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  box-shadow: 0 0 30px #4facfe;
+}
+
+.progress {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.progress p {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #667eea;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  transition: width 0.3s ease;
+}
+
+.game-over-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.result-card {
+  background: white;
+  border-radius: 30px;
+  padding: 50px 40px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: popIn 0.5s ease-out;
+}
+
+.emoji {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  animation: bounce 0.8s ease infinite;
+}
+
+.result-card h2 {
+  font-size: 2rem;
+  color: #667eea;
+  margin-bottom: 20px;
+}
+
+.stats {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+.restart-btn,
+.menu-btn {
+  padding: 15px 40px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  margin: 10px;
+}
+
+.restart-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.menu-btn {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.restart-btn:hover,
+.menu-btn:hover {
+  transform: scale(1.05);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+</style>

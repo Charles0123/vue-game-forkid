@@ -17,27 +17,35 @@
           <div class="menu-icon">{{ game.icon }}</div>
           <h2 class="menu-title">{{ game.name }}</h2>
           <p class="menu-desc">{{ game.description }}</p>
+          <div class="difficulty-badges">
+            <span class="badge easy">簡單</span>
+            <span class="badge medium">中等</span>
+            <span class="badge hard">困難</span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- 記憶配對遊戲 -->
-    <MemoryGame
-      v-if="currentGame === 'memory'"
-      @back="backToMenu"
-    />
+    <MemoryGame v-if="currentGame === 'memory'" @back="backToMenu" />
 
     <!-- 數字炸彈遊戲 -->
-    <NumberBomb
-      v-if="currentGame === 'bomb'"
-      @back="backToMenu"
-    />
+    <NumberBomb v-if="currentGame === 'bomb'" @back="backToMenu" />
 
     <!-- 旋轉顏色遊戲 -->
-    <ColorWheel
-      v-if="currentGame === 'colors'"
-      @back="backToMenu"
-    />
+    <ColorWheel v-if="currentGame === 'colors'" @back="backToMenu" />
+
+    <!-- 數學遊戲 -->
+    <MathGame v-if="currentGame === 'math'" @back="backToMenu" />
+
+    <!-- 規律遊戲 -->
+    <PatternGame v-if="currentGame === 'pattern'" @back="backToMenu" />
+
+    <!-- 序列遊戲 -->
+    <SequenceGame v-if="currentGame === 'sequence'" @back="backToMenu" />
+
+    <!-- 影子遊戲 -->
+    <ShadowGame v-if="currentGame === 'shadow'" @back="backToMenu" />
   </div>
 </template>
 
@@ -45,12 +53,20 @@
 import MemoryGame from './components/MemoryGame.vue'
 import NumberBomb from './components/NumberBomb.vue'
 import ColorWheel from './components/ColorWheel.vue'
+import MathGame from './components/MathGame.vue'
+import PatternGame from './components/PatternGame.vue'
+import SequenceGame from './components/SequenceGame.vue'
+import ShadowGame from './components/ShadowGame.vue'
 
 export default {
   components: {
     MemoryGame,
     NumberBomb,
-    ColorWheel
+    ColorWheel,
+    MathGame,
+    PatternGame,
+    SequenceGame,
+    ShadowGame
   },
   data() {
     return {
@@ -73,6 +89,30 @@ export default {
           name: '🎨 旋轉顏色',
           icon: '🌈',
           description: '點擊正確的顏色'
+        },
+        {
+          id: 'math',
+          name: '🧮 數學高手',
+          icon: '➕',
+          description: '解決數學計算題'
+        },
+        {
+          id: 'pattern',
+          name: '🧩 規律尋找',
+          icon: '📊',
+          description: '找出序列中的規律'
+        },
+        {
+          id: 'sequence',
+          name: '🎯 記憶序列',
+          icon: '🌟',
+          description: '記住並重複顏色序列'
+        },
+        {
+          id: 'shadow',
+          name: '👁️ 影子配對',
+          icon: '🔍',
+          description: '配對圖形和影子'
         }
       ]
     }
@@ -126,7 +166,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 25px;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -171,6 +211,36 @@ export default {
   color: #fff;
   text-align: center;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+  margin-bottom: 15px;
+}
+
+.difficulty-badges {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-weight: bold;
+  color: white;
+}
+
+.badge.easy {
+  background: #90EE90;
+  color: #333;
+}
+
+.badge.medium {
+  background: #FFD700;
+  color: #333;
+}
+
+.badge.hard {
+  background: #FF6B6B;
 }
 
 @keyframes bounceIn {
