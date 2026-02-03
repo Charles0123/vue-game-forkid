@@ -58,7 +58,8 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue'
 import MemoryGame from './components/MemoryGame.vue'
 import NumberBomb from './components/NumberBomb.vue'
 import ColorWheel from './components/ColorWheel.vue'
@@ -70,94 +71,77 @@ import MatchGame from './components/MatchGame.vue'
 import SortGame from './components/SortGame.vue'
 import ReactionGame from './components/ReactionGame.vue'
 
-export default {
-  components: {
-    MemoryGame,
-    NumberBomb,
-    ColorWheel,
-    MathGame,
-    PatternGame,
-    SequenceGame,
-    ShadowGame,
-    MatchGame,
-    SortGame,
-    ReactionGame
+const currentGame = ref(null)
+
+const gameList = [
+  {
+    id: 'memory',
+    name: '🧠 記憶大師',
+    icon: '🐶',
+    description: '配對相同的動物卡牌'
   },
-  data() {
-    return {
-      currentGame: null,
-      gameList: [
-        {
-          id: 'memory',
-          name: '🧠 記憶大師',
-          icon: '🐶',
-          description: '配對相同的動物卡牌'
-        },
-        {
-          id: 'bomb',
-          name: '💣 數字炸彈',
-          icon: '💥',
-          description: '快速點擊正確的數字'
-        },
-        {
-          id: 'colors',
-          name: '🎨 旋轉顏色',
-          icon: '🌈',
-          description: '點擊正確的顏色'
-        },
-        {
-          id: 'math',
-          name: '🧮 數學高手',
-          icon: '➕',
-          description: '解決數學計算題'
-        },
-        {
-          id: 'pattern',
-          name: '🧩 規律尋找',
-          icon: '📊',
-          description: '找出序列中的規律'
-        },
-        {
-          id: 'sequence',
-          name: '🎯 記憶序列',
-          icon: '🌟',
-          description: '記住並重複顏色序列'
-        },
-        {
-          id: 'shadow',
-          name: '👁️ 影子配對',
-          icon: '🔍',
-          description: '配對圖形和影子'
-        },
-        {
-          id: 'match',
-          name: '🎯 配對大師',
-          icon: '🎯',
-          description: '找到相同的圖案組合'
-        },
-        {
-          id: 'sort',
-          name: '🔢 數字排序',
-          icon: '📊',
-          description: '按順序點擊數字'
-        },
-        {
-          id: 'reaction',
-          name: '⚡ 反應測驗',
-          icon: '⚡',
-          description: '測試你的反應速度'
-        }
-      ]
-    }
+  {
+    id: 'bomb',
+    name: '💣 數字炸彈',
+    icon: '💥',
+    description: '快速點擊正確的數字'
   },
-  methods: {
-    selectGame(gameId) {
-      this.currentGame = gameId
-    },
-    backToMenu() {
-      this.currentGame = null
-    }
+  {
+    id: 'colors',
+    name: '🎨 旋轉顏色',
+    icon: '🌈',
+    description: '點擊正確的顏色'
+  },
+  {
+    id: 'math',
+    name: '🧮 數學高手',
+    icon: '➕',
+    description: '解決數學計算題'
+  },
+  {
+    id: 'pattern',
+    name: '🧩 規律尋找',
+    icon: '📊',
+    description: '找出序列中的規律'
+  },
+  {
+    id: 'sequence',
+    name: '🎯 記憶序列',
+    icon: '🌟',
+    description: '記住並重複顏色序列'
+  },
+  {
+    id: 'shadow',
+    name: '👁️ 影子配對',
+    icon: '🔍',
+    description: '配對圖形和影子'
+  },
+  {
+    id: 'match',
+    name: '🎯 配對大師',
+    icon: '🎯',
+    description: '找到相同的圖案組合'
+  },
+  {
+    id: 'sort',
+    name: '🔢 數字排序',
+    icon: '📊',
+    description: '按順序點擊數字'
+  },
+  {
+    id: 'reaction',
+    name: '⚡ 反應測驗',
+    icon: '⚡',
+    description: '測試你的反應速度'
   }
+]
+
+const selectGame = (gameId) => {
+  currentGame.value = gameId
+}
+
+const backToMenu = () => {
+  currentGame.value = null
 }
 </script>
 

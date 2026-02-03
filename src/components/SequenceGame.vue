@@ -1,8 +1,8 @@
 <template>
   <div class="sequence-game-screen">
-    <!-- 遊戲頭部 -->
+    <!-- 遊戲頂部 -->
     <div class="game-header">
-      <button class="back-btn" @click="$emit('back')">← 返回菜單</button>
+      <button class="back-btn" @click="emit('back')">◀ 返回菜單</button>
       <div class="game-info">
         <div class="info-item">
           <span class="label">難度:</span>
@@ -18,26 +18,26 @@
     <!-- 難度選擇 -->
     <div v-if="!gameStarted" class="difficulty-selector">
       <h2>記憶序列遊戲</h2>
-      <p class="subtitle">記住並重複序列</p>
+      <p class="subtitle">記住並重複顏色</p>
       <div class="difficulty-buttons">
         <button @click="startGame('easy')" class="difficulty-btn easy">
-          ⭐ 簡單 (3步)
+          🌟簡單 (3級)
         </button>
         <button @click="startGame('medium')" class="difficulty-btn medium">
-          ⭐⭐ 中等 (5步)
+          ⭐⭐ 中等 (5級)
         </button>
         <button @click="startGame('hard')" class="difficulty-btn hard">
-          ⭐⭐⭐ 困難 (8步)
+          ⭐⭐⭐困難 (8級)
         </button>
       </div>
     </div>
 
-    <!-- 遊戲區域 -->
+    <!-- 遊戲操作-->
     <div v-else-if="!gameOver" class="game-area">
       <div class="sequence-display">
         <p class="instruction">{{ instruction }}</p>
         <button @click="playSequence" class="play-btn" :disabled="isPlaying">
-          📽️ 播放序列
+          🔊播放序列
         </button>
       </div>
 
@@ -55,23 +55,23 @@
       </div>
 
       <div class="info-text">
-        <p>已點擊: {{ userSequence.length }}/{{ sequence.length }}</p>
+        <p>已回應: {{ userSequence.length }}/{{ sequence.length }}</p>
       </div>
     </div>
 
     <!-- 遊戲結束 -->
     <div v-else class="game-over-screen">
       <div class="result-card">
-        <div class="emoji">🎯</div>
+        <div class="emoji">🎉</div>
         <h2>{{ resultMessage }}</h2>
         <p class="stats">
-          完成關卡: {{ level }} | 分數: {{ score }}
+          完成級數: {{ level }} | 分數: {{ score }}
         </p>
 
         <button class="restart-btn" @click="resetGame">
           🔄 重新開始
         </button>
-        <button class="menu-btn" @click="$emit('back')">
+        <button class="menu-btn" @click="emit('back')">
           🏠 返回菜單
         </button>
       </div>
@@ -79,120 +79,120 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'SequenceGame',
-  emits: ['back'],
-  data() {
-    return {
-      difficulty: null,
-      gameStarted: false,
-      gameOver: false,
-      sequence: [],
-      userSequence: [],
-      level: 1,
-      maxLevel: 0,
-      isPlaying: false,
-      activeColor: -1,
-      colors: ['#FF6B6B', '#4CAF50', '#2196F3', '#FFD700'],
-      colorNames: ['紅', '綠', '藍', '黃'],
-      score: 0,
-      instruction: '觀看序列'
-    }
-  },
-  computed: {
-    difficultyText() {
-      const map = { easy: '簡單', medium: '中等', hard: '困難' }
-      return map[this.difficulty] || ''
-    },
-    resultMessage() {
-      if (this.level >= 10) return '記憶超人！太厲害了！🌟'
-      if (this.level >= 6) return '很不錯！記憶力很好！💪'
-      return '繼續加油！下次會更好！💙'
-    }
-  },
-  methods: {
-    startGame(level) {
-      this.difficulty = level
-      this.gameStarted = true
-      if (level === 'easy') {
-        this.maxLevel = 5
-      } else if (level === 'medium') {
-        this.maxLevel = 7
-      } else {
-        this.maxLevel = 10
-      }
-      this.startRound()
-    },
-    startRound() {
-      const randomColor = Math.floor(Math.random() * this.colors.length)
-      this.sequence.push(randomColor)
-      this.userSequence = []
-      this.instruction = '觀看序列'
+<script setup>
+import { ref, computed } from 'vue'
+
+const emit = defineEmits(['back'])
+
+// State
+const difficulty = ref(null)
+const gameStarted = ref(false)
+const gameOver = ref(false)
+const sequence = ref([])
+const userSequence = ref([])
+const level = ref(1)
+const maxLevel = ref(0)
+const isPlaying = ref(false)
+const activeColor = ref(-1)
+const colors = ref(['#FF6B6B', '#4CAF50', '#2196F3', '#FFD700'])
+const colorNames = ref(['紅', '綠', '藍', '金'])
+const score = ref(0)
+const instruction = ref('觀察顏色序列')
+
+// Computed
+const difficultyText = computed(() => {
+  const map = { easy: '簡單', medium: '中等', hard: '困難' }
+  return map[difficulty.value] || ''
+})
+
+const resultMessage = computed(() => {
+  if (level.value >= 10) return '記憶超人！太厲害了！'
+  if (level.value >= 6) return '很好的記憶力，表現相當不錯！'
+  return '繼續加油！下次會更好！'
+})
+
+// Methods
+const startGame = (lvl) => {
+  difficulty.value = lvl
+  gameStarted.value = true
+  if (lvl === 'easy') {
+    maxLevel.value = 5
+  } else if (lvl === 'medium') {
+    maxLevel.value = 7
+  } else {
+    maxLevel.value = 10
+  }
+  startRound()
+}
+
+const startRound = () => {
+  const randomColor = Math.floor(Math.random() * colors.value.length)
+  sequence.value.push(randomColor)
+  userSequence.value = []
+  instruction.value = '觀察顏色序列'
+  setTimeout(() => {
+    playSequence()
+  }, 500)
+}
+
+const playSequence = () => {
+  isPlaying.value = true
+  instruction.value = '播放序列'
+  let delay = 0
+  const speed = 100 + (5 - difficulty.value.length) * 100
+
+  sequence.value.forEach((colorIndex) => {
+    setTimeout(() => {
+      activeColor.value = colorIndex
       setTimeout(() => {
-        this.playSequence()
-      }, 500)
-    },
-    playSequence() {
-      this.isPlaying = true
-      this.instruction = '看著序列'
-      let delay = 0
-      const speed = 100 + (5 - this.difficulty.length) * 100
+        activeColor.value = -1
+      }, speed / 2)
+    }, delay)
+    delay += speed
+  })
 
-      this.sequence.forEach((colorIndex, i) => {
-        setTimeout(() => {
-          this.activeColor = colorIndex
-          setTimeout(() => {
-            this.activeColor = -1
-          }, speed / 2)
-        }, delay)
-        delay += speed
-      })
+  setTimeout(() => {
+    isPlaying.value = false
+    instruction.value = '你的轉身！請點擊顏色'
+  }, delay)
+}
 
+const selectColor = (index) => {
+  if (isPlaying.value) return
+
+  userSequence.value.push(index)
+  activeColor.value = index
+  setTimeout(() => {
+    activeColor.value = -1
+  }, 100)
+
+  if (userSequence.value[userSequence.value.length - 1] !== sequence.value[userSequence.value.length - 1]) {
+    gameOver.value = true
+    return
+  }
+
+  if (userSequence.value.length === sequence.value.length) {
+    level.value++
+    score.value += 10 * level.value
+    if (level.value > maxLevel.value) {
+      gameOver.value = true
+    } else {
       setTimeout(() => {
-        this.isPlaying = false
-        this.instruction = '你的回合！點擊顏色'
-      }, delay)
-    },
-    selectColor(index) {
-      if (this.isPlaying) return
-
-      this.userSequence.push(index)
-      this.activeColor = index
-      setTimeout(() => {
-        this.activeColor = -1
-      }, 100)
-
-      if (this.userSequence[this.userSequence.length - 1] !== this.sequence[this.userSequence.length - 1]) {
-        // 錯誤
-        this.gameOver = true
-        return
-      }
-
-      if (this.userSequence.length === this.sequence.length) {
-        // 完成本輪
-        this.level++
-        this.score += 10 * this.level
-        if (this.level > this.maxLevel) {
-          this.gameOver = true
-        } else {
-          setTimeout(() => {
-            this.startRound()
-          }, 1000)
-        }
-      }
-    },
-    resetGame() {
-      this.difficulty = null
-      this.gameStarted = false
-      this.gameOver = false
-      this.sequence = []
-      this.userSequence = []
-      this.level = 1
-      this.score = 0
-      this.maxLevel = 0
+        startRound()
+      }, 1000)
     }
   }
+}
+
+const resetGame = () => {
+  difficulty.value = null
+  gameStarted.value = false
+  gameOver.value = false
+  sequence.value = []
+  userSequence.value = []
+  level.value = 1
+  score.value = 0
+  maxLevel.value = 0
 }
 </script>
 
