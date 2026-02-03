@@ -1,15 +1,39 @@
 <template>
   <div class="memory-game-screen">
+    <!-- 難度選擇 -->
+    <div v-if="!gameStarted" class="difficulty-selector">
+      <div class="title-section">
+        <h2>🧠 記憶大師</h2>
+        <p class="subtitle">選擇難度開始遊戲</p>
+      </div>
+      <div class="difficulty-buttons">
+        <button @click="startGame('easy')" class="difficulty-btn easy">
+          ⭐ 簡單 (6對卡牌)
+        </button>
+        <button @click="startGame('medium')" class="difficulty-btn medium">
+          ⭐⭐ 中等 (12對卡牌)
+        </button>
+        <button @click="startGame('hard')" class="difficulty-btn hard">
+          ⭐⭐⭐ 困難 (18對卡牌)
+        </button>
+      </div>
+      <button class="back-btn" @click="$emit('back')">← 返回菜單</button>
+    </div>
+
     <!-- 遊戲頭部 -->
-    <div class="game-header">
+    <div v-else class="game-header">
       <button class="back-btn" @click="$emit('back')">← 返回菜單</button>
       <div class="score-info">
         <div class="score-item">
-          <span class="label">配對次數:</span>
+          <span class="label">難度:</span>
+          <span class="difficulty" :class="difficulty">{{ difficultyText }}</span>
+        </div>
+        <div class="score-item">
+          <span class="label">配對:</span>
           <span class="value">{{ matchCount }}/{{ totalPairs }}</span>
         </div>
         <div class="score-item">
-          <span class="label">點擊次數:</span>
+          <span class="label">點擊:</span>
           <span class="value">{{ clickCount }}</span>
         </div>
       </div>
@@ -19,7 +43,7 @@
     </div>
 
     <!-- 遊戲網格 -->
-    <div class="memory-grid" v-if="!isGameOver">
+    <div class="memory-grid" v-if="gameStarted && !isGameOver">
       <div
         v-for="(card, index) in cards"
         :key="index"
@@ -35,7 +59,7 @@
     </div>
 
     <!-- 遊戲結束畫面 -->
-    <div v-else class="game-over-screen">
+    <div v-else-if="isGameOver" class="game-over-screen">
       <div class="congratulations">
         <div class="trophy">🏆</div>
         <h2>太棒了！</h2>
@@ -48,6 +72,7 @@
         </p>
         <button class="play-again-btn" @click="resetGame">
           🎮 再玩一次
+
         </button>
         <button class="menu-btn" @click="$emit('back')">
           🏠 返回菜單
@@ -63,6 +88,8 @@ export default {
   emits: ['back'],
   data() {
     return {
+      difficulty: null,
+      gameStarted: false,
       cards: [],
       flippedCards: [],
       matchCount: 0,
@@ -75,6 +102,12 @@ export default {
       emojis: ['🐶', '🐱', '🐻', '🐼', '🐨', '🐯', '🐸', '🐢', '🦁', '🐮', '🐷', '🦊']
     }
   },
+  computed: {
+    difficultyText() {
+      const map = { easy: '簡單', medium: '中等', hard: '困難' }
+      return map[this.difficulty] || ''
+    }
+  },
   mounted() {
     this.initGame()
   },
@@ -82,6 +115,18 @@ export default {
     if (this.gameTimer) clearInterval(this.gameTimer)
   },
   methods: {
+    startGame(level) {
+      this.difficulty = level
+      this.gameStarted = true
+      if (level === 'easy') {
+        this.totalPairs = 6
+      } else if (level === 'medium') {
+        this.totalPairs = 12
+      } else {
+        this.totalPairs = 18
+      }
+      this.initGame()
+    },
     initGame() {
       // 創建卡牌對
       const selectedEmojis = this.emojis.slice(0, this.totalPairs)
@@ -139,7 +184,9 @@ export default {
             this.isGameOver = true
             if (this.gameTimer) clearInterval(this.gameTimer)
           }, 500)
-        }
+        }difficulty = null
+      this.gameStarted = false
+      this.
 
         this.flippedCards = []
       } else {
@@ -172,6 +219,67 @@ export default {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 30px 20px;
+}
+
+.difficulty-selector {
+  max-width: 600px;
+  margin: 50px auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 25px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.5s ease-out;
+}
+
+.title-section {
+  margin-bottom: 30px;
+}
+
+.title-section h2 {
+  font-size: 2.5rem;
+  color: #667eea;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.difficulty-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.difficulty-btn {
+  padding: 30px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.difficulty-btn.easy {
+  background: linear-gradient(135deg, #90EE90 0%, #7CCD7C 100%);
+}
+
+.difficulty-btn.medium {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+.difficulty-btn.hard {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF4444 100%);
+}
+
+.difficulty-btn:hover {
+  transform: scale(1.1);
 }
 
 .game-header {
@@ -210,6 +318,59 @@ export default {
 .restart-btn {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   color: white;
+}
+
+.restart-btn:hover {
+  transform: scale(1.05);
+}
+
+.score-info {
+  display: flex;
+  gap: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 15px 30px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.label {
+  font-weight: bold;
+  color: #667eea;
+  font-size: 1.1rem;
+}
+
+.difficulty {
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 5px 15px;
+  border-radius: 10px;
+}
+
+.difficulty.easy {
+  background: #90EE90;
+  color: #333;
+}
+
+.difficulty.medium {
+  background: #FFD700;
+  color: #333;
+}
+
+.difficulty.hard {
+  background: #FF6B6B;
+  color: white;
+}
+
+.value {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #f5576c;
 }
 
 .restart-btn:hover {

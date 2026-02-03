@@ -1,9 +1,33 @@
 <template>
   <div class="color-wheel-screen">
+    <!-- 難度選擇 -->
+    <div v-if="!gameStarted" class="difficulty-selector">
+      <div class="title-section">
+        <h2>🎨 旋轉顏色</h2>
+        <p class="subtitle">選擇難度開始遊戲</p>
+      </div>
+      <div class="difficulty-buttons">
+        <button @click="startGame('easy')" class="difficulty-btn easy">
+          ⭐ 簡單 (4種顏色)
+        </button>
+        <button @click="startGame('medium')" class="difficulty-btn medium">
+          ⭐⭐ 中等 (6種顏色)
+        </button>
+        <button @click="startGame('hard')" class="difficulty-btn hard">
+          ⭐⭐⭐ 困難 (8種顏色)
+        </button>
+      </div>
+      <button class="back-btn" @click="$emit('back')">← 返回菜單</button>
+    </div>
+
     <!-- 遊戲頭部 -->
-    <div class="game-header">
+    <div v-else class="game-header">
       <button class="back-btn" @click="$emit('back')">← 返回菜單</button>
       <div class="game-info">
+        <div class="info-item">
+          <span class="label">難度:</span>
+          <span class="difficulty" :class="difficulty">{{ difficultyText }}</span>
+        </div>
         <div class="info-item">
           <span class="label">等級:</span>
           <span class="level">{{ level }}</span>
@@ -16,7 +40,7 @@
     </div>
 
     <!-- 遊戲區域 -->
-    <div v-if="!gameOver" class="game-area">
+    <div v-if="gameStarted && !gameOver" class="game-area">
       <!-- 顏色輪盤 -->
       <div class="wheel-container">
         <div class="instructions">
@@ -80,13 +104,27 @@ export default {
       roundsToWin: 5,
       gameOver: false,
       rotation: 0,
+      difficulty: null,
+      gameStarted: false,
+      allColors: {
+        '#FF6B6B': '紅色',
+        '#FFA500': '橙色',
+        '#FFD700': '黃色',
+        '#4CAF50': '綠色',
+        '#4169E1': '藍色',
+        '#9B59B6': '紫色',
+        '#FF1493': '深粉色',
+        '#00CED1': '深青色'
+      },
       colorNames: {
         '#FF6B6B': '紅色',
         '#FFA500': '橙色',
         '#FFD700': '黃色',
         '#4CAF50': '綠色',
         '#4169E1': '藍色',
-        '#9B59B6': '紫色'
+        '#9B59B6': '紫色',
+        '#FF1493': '深粉色',
+        '#00CED1': '深青色'
       }
     }
   },
@@ -99,15 +137,33 @@ export default {
       } else {
         return '不錯喔！下次會更好！💙'
       }
+    },
+    difficultyText() {
+      if (this.difficulty === 'easy') return '簡單'
+      if (this.difficulty === 'medium') return '中等'
+      if (this.difficulty === 'hard') return '困難'
+      return ''
     }
   },
   mounted() {
-    this.startGame()
+    // 不自動開始遊戲，等待使用者選擇難度
   },
   methods: {
-    startGame() {
-      const colorCount = 4 + Math.floor(this.level / 2)
-      this.colors = Object.keys(this.colorNames).slice(0, colorCount)
+    startGame(level) {
+      this.difficulty = level
+      this.gameStarted = true
+      this.score = 0
+      this.level = 1
+      this.correctCount = 0
+      this.gameOver = false
+      
+      let colorCount = 0
+      if (level === 'easy') colorCount = 4
+      else if (level === 'medium') colorCount = 6
+      else if (level === 'hard') colorCount = 8
+      
+      const colorArray = Object.keys(this.colorNames)
+      this.colors = colorArray.slice(0, colorCount)
       this.selectTargetColor()
     },
     selectTargetColor() {
@@ -143,7 +199,7 @@ export default {
         this.gameOver = true
       } else {
         setTimeout(() => {
-          this.startGame()
+          this.selectTargetColor()
         }, 500)
       }
     },
@@ -161,7 +217,8 @@ export default {
       this.level = 1
       this.correctCount = 0
       this.gameOver = false
-      this.startGame()
+      this.difficulty = null
+      this.gameStarted = false
     }
   }
 }

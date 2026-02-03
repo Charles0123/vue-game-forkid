@@ -1,9 +1,33 @@
 <template>
   <div class="bomb-game-screen">
+    <!-- 難度選擇 -->
+    <div v-if="!gameStarted" class="difficulty-selector">
+      <div class="title-section">
+        <h2>💣 數字炸彈</h2>
+        <p class="subtitle">選擇難度開始遊戲</p>
+      </div>
+      <div class="difficulty-buttons">
+        <button @click="startGame('easy')" class="difficulty-btn easy">
+          ⭐ 簡單 (寬鬆時間)
+        </button>
+        <button @click="startGame('medium')" class="difficulty-btn medium">
+          ⭐⭐ 中等 (正常時間)
+        </button>
+        <button @click="startGame('hard')" class="difficulty-btn hard">
+          ⭐⭐⭐ 困難 (時間緊張)
+        </button>
+      </div>
+      <button class="back-btn" @click="$emit('back')">← 返回菜單</button>
+    </div>
+
     <!-- 遊戲頭部 -->
-    <div class="game-header">
+    <div v-else class="game-header">
       <button class="back-btn" @click="$emit('back')">← 返回菜單</button>
       <div class="game-info">
+        <div class="info-item">
+          <span class="label">難度:</span>
+          <span class="difficulty" :class="difficulty">{{ difficultyText }}</span>
+        </div>
         <div class="info-item">
           <span class="label">生命值:</span>
           <div class="hearts">
@@ -20,7 +44,7 @@
     </div>
 
     <!-- 遊戲區域 -->
-    <div v-if="!gameOver" class="bomb-game-area">
+    <div v-if="gameStarted && !gameOver" class="bomb-game-area">
       <div class="instructions">
         <p>⏰ 快點擊正確的數字：<strong>{{ targetNumber }}</strong></p>
         <div class="time-bar">
@@ -78,9 +102,11 @@ export default {
       timeLeft: 3,
       timeTotal: 3,
       gameTimer: null,
-      difficulty: 1,
+      difficulty: null,
+      difficultyLevel: 1,
       selectedIndex: -1,
-      isCorrect: false
+      isCorrect: false,
+      gameStarted: false
     }
   },
   computed: {
@@ -95,23 +121,37 @@ export default {
       } else {
         return '繼續練習喔！下次會更好！💙'
       }
+    },
+    difficultyText() {
+      if (this.difficulty === 'easy') return '簡單'
+      if (this.difficulty === 'medium') return '中等'
+      if (this.difficulty === 'hard') return '困難'
+      return ''
     }
   },
   mounted() {
-    this.startGame()
+    // 不自動開始遊戲，等待使用者選擇難度
   },
   beforeUnmount() {
     if (this.gameTimer) clearInterval(this.gameTimer)
   },
   methods: {
-    startGame() {
+    startGame(level) {
+      this.difficulty = level
+      this.difficultyLevel = level === 'easy' ? 1 : level === 'medium' ? 2 : 3
+      this.timeTotal = level === 'easy' ? 5 : level === 'medium' ? 3.5 : 2.5
+      this.score = 0
+      this.lives = 3
+      this.wins = 0
+      this.gameOver = false
+      this.gameStarted = true
       this.generateRound()
       this.startTimer()
     },
     generateRound() {
       // 根據難度生成數字
-      const count = 3 + Math.floor(this.difficulty / 2)
-      const range = 10 + this.difficulty * 5
+      const count = 3 + Math.floor(this.difficultyLevel / 2)
+      const range = 10 + this.difficultyLevel * 5
       const numbers = new Set()
 
       while (numbers.size < count) {

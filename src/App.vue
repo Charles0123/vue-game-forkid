@@ -46,6 +46,15 @@
 
     <!-- 影子遊戲 -->
     <ShadowGame v-if="currentGame === 'shadow'" @back="backToMenu" />
+
+    <!-- 配對大師遊戲 -->
+    <MatchGame v-if="currentGame === 'match'" @back="backToMenu" />
+
+    <!-- 數字排序遊戲 -->
+    <SortGame v-if="currentGame === 'sort'" @back="backToMenu" />
+
+    <!-- 反應測驗遊戲 -->
+    <ReactionGame v-if="currentGame === 'reaction'" @back="backToMenu" />
   </div>
 </template>
 
@@ -57,6 +66,9 @@ import MathGame from './components/MathGame.vue'
 import PatternGame from './components/PatternGame.vue'
 import SequenceGame from './components/SequenceGame.vue'
 import ShadowGame from './components/ShadowGame.vue'
+import MatchGame from './components/MatchGame.vue'
+import SortGame from './components/SortGame.vue'
+import ReactionGame from './components/ReactionGame.vue'
 
 export default {
   components: {
@@ -66,7 +78,10 @@ export default {
     MathGame,
     PatternGame,
     SequenceGame,
-    ShadowGame
+    ShadowGame,
+    MatchGame,
+    SortGame,
+    ReactionGame
   },
   data() {
     return {
@@ -113,6 +128,24 @@ export default {
           name: '👁️ 影子配對',
           icon: '🔍',
           description: '配對圖形和影子'
+        },
+        {
+          id: 'match',
+          name: '🎯 配對大師',
+          icon: '🎯',
+          description: '找到相同的圖案組合'
+        },
+        {
+          id: 'sort',
+          name: '🔢 數字排序',
+          icon: '📊',
+          description: '按順序點擊數字'
+        },
+        {
+          id: 'reaction',
+          name: '⚡ 反應測驗',
+          icon: '⚡',
+          description: '測試你的反應速度'
         }
       ]
     }
