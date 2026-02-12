@@ -186,8 +186,8 @@ const shakeAnimation = () => {
   }
 }
 
-const startGame = (level) => {
-  difficulty.value = level
+const startGame = (selectedDifficulty) => {
+  difficulty.value = selectedDifficulty
   gameStarted.value = true
   gameOver.value = false
   score.value = 0
@@ -195,9 +195,9 @@ const startGame = (level) => {
   correctCount.value = 0
 
   let colorCount = 0
-  if (level === 'easy') colorCount = 4
-  else if (level === 'medium') colorCount = 6
-  else if (level === 'hard') colorCount = 8
+  if (selectedDifficulty === 'easy') colorCount = 4
+  else if (selectedDifficulty === 'medium') colorCount = 6
+  else if (selectedDifficulty === 'hard') colorCount = 8
 
   const colorArray = Object.keys(colorNames)
   colors.value = colorArray.slice(0, colorCount)
